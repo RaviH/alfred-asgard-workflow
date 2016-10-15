@@ -1,6 +1,8 @@
 import os
 
 import requests
+import logging
+import json
 
 from alfred_file import AlfredFile, get_workflow_data_dir
 from alfred_item import Item
@@ -21,15 +23,45 @@ def get_clusters_from_asgard():
         raise LookupError()
 
 
+def execute(query):
+    """Execute the desired command
+
+    Keyword arguments:
+    query   -- The query entered by the user
+
+    """
+    clusters_cache = get_clusters_from_cache()
+    words = query.split()
+    if len(words) == 0:
+        print clusters_cache
+    else:
+        word = words[0]
+        stash_cache_dict = json.loads(clusters_cache)
+        matches = [x for x in stash_cache_dict['items'] if fulfills_some_condition(x, word)]
+        items_dict = {'items': matches}
+        items_json = json.dumps(items_dict, sort_keys=True, indent=4, separators=(',', ': '))
+        print items_json
+
+
+def fulfills_some_condition(item, word):
+    found = word in item['subTitle']
+    return found
+
+
 def get_clusters_from_cache():
     return alfred_clusters_cache_file.read_json_file()
 
 
 def create_clusters_cache():
-    clusters = get_clusters_from_asgard()
-    items = [Item(cluster.cluster, base_url).__dict__ for cluster in clusters]
-    items_dict = {'items': items}
-    return alfred_clusters_cache_file.write_to_file(items_dict)
+    try:
+        clusters = get_clusters_from_asgard()
+        items = [Item(cluster.cluster, base_url).__dict__ for cluster in clusters]
+        items_dict = {'items': items}
+        alfred_clusters_cache_file.write_to_file(items_dict)
+        return "Asgard Cluster Cache created successfully."
+    except Exception as e:
+        logging.error(e)
+        return "Failed"
 
 
 if __name__ == '__main__':

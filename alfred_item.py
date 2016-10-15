@@ -8,7 +8,7 @@ class Item:
         self.uid = name
         self.title = name
         self.subTitle = name
-        self.arg = name
+        self.arg = url.format(base_url, name)
         self.autoComplete = name
         self.quick_look_url = url.format(base_url, name)
 
