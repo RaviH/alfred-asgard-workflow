@@ -3,6 +3,7 @@ import os
 import requests
 import logging
 import json
+import re
 
 from alfred_file import AlfredFile, get_workflow_data_dir
 from alfred_item import Item
@@ -44,7 +45,10 @@ def execute(query):
 
 
 def fulfills_some_condition(item, word):
-    found = word in item['subTitle']
+    words = word.split('-')
+    regex = ".*".join(words)
+    final_reg_ex = ".*{0}.*".format(regex)
+    found = re.match(final_reg_ex, item['subTitle'])
     return found
 
 
@@ -70,4 +74,4 @@ if __name__ == '__main__':
     # print get_clusters_from_asgard()
     # clusters_cache = create_clusters_cache()
     # print clusters_cache
-    print get_clusters_from_cache()
+    print execute("accountmiddle-cnet")
